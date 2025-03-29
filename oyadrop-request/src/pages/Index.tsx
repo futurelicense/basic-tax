@@ -252,7 +252,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 py-8 px-4 md:py-12">
       {/* WhatsApp Support Button */}
       <WhatsAppSupport 
-        phoneNumber="2348123456789" // Replace with your actual WhatsApp number with country code
+        phoneNumber="+2349045684257" // Replace with your actual WhatsApp number with country code
         message="Hello OyaDrop, I need help with my delivery request."
       />
       
