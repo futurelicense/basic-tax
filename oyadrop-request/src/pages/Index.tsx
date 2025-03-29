@@ -263,7 +263,7 @@ const Index = () => {
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 mb-4 opacity-90">
                 <img 
-                  src="https://raw.githubusercontent.com/oyadrop/logoicons/main/YellowLogo.png" 
+                  src="https://oyadrop.com.ng/wp-content/uploads/2020/10/cropped-oa2-1.png" 
                   alt="OyaDrop Logo" 
                   className="w-full h-full object-contain"
                 />
