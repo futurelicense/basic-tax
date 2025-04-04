@@ -4,6 +4,9 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { toast } from "sonner";
 import { disableBodyScroll, enableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock';
+import MapDialog from './MapDialog';
+import { Button } from '@/components/ui/button';
+import { Map } from 'lucide-react';
 
 interface AddressInputProps {
   label: string;
@@ -48,6 +51,8 @@ const AddressInput = ({
   const [debouncedValue, setDebouncedValue] = useState("");
   const suggestionRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [showMapDialog, setShowMapDialog] = useState(false);
+  const [coordinates, setCoordinates] = useState<[number, number] | undefined>();
 
   useEffect(() => {
     setInputValue(value);
@@ -188,6 +193,14 @@ const AddressInput = ({
     setShowSuggestions(false);
   };
 
+  const handleMapSelection = (address: string, coords: [number, number]) => {
+    setInputValue(address);
+    setCoordinates(coords);
+    setInputStatus('valid');
+    onChange(address, coords);
+    setShowMapDialog(false);
+  };
+
   // Replace the Input component JSX with this updated version
   return (
     <div className={cn("relative space-y-2", className)}>
@@ -200,49 +213,60 @@ const AddressInput = ({
         </label>
       )}
 
-      <div className="relative flex items-center">
-        <MapPin className={cn(
-          "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4",
-          {
-            'text-muted-foreground': inputStatus === 'idle',
-            'text-orange-500': inputStatus === 'typing',
-            'text-green-500': inputStatus === 'valid',
-            'text-red-500': inputStatus === 'invalid'
-          }
-        )} />
-        <Input
-          id={id}
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => {
-            handleInputChange(e);
-            setInputStatus(e.target.value.length >= 3 ? 'typing' : 'idle');
-          }}
-          onFocus={() => inputValue.length >= 3 && setShowSuggestions(true)}
-          placeholder={placeholder}
-          className={cn(
-            "pl-10 transition-colors",
+      <div className="relative flex items-center gap-2">
+        <div className="relative flex-1">
+          <MapPin className={cn(
+            "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4",
             {
-              'border-border': inputStatus === 'idle',
-              'border-orange-500 focus:border-orange-500 focus:ring-orange-500/20': inputStatus === 'typing',
-              'border-green-500 focus:border-green-500 focus:ring-green-500/20': inputStatus === 'valid',
-              'border-red-500 focus:border-red-500 focus:ring-red-500/20': inputStatus === 'invalid' || error
+              'text-muted-foreground': inputStatus === 'idle',
+              'text-orange-500': inputStatus === 'typing',
+              'text-green-500': inputStatus === 'valid',
+              'text-red-500': inputStatus === 'invalid'
             }
+          )} />
+          <Input
+            id={id}
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => {
+              handleInputChange(e);
+              setInputStatus(e.target.value.length >= 3 ? 'typing' : 'idle');
+            }}
+            onFocus={() => inputValue.length >= 3 && setShowSuggestions(true)}
+            placeholder={placeholder}
+            className={cn(
+              "pl-10 transition-colors",
+              {
+                'border-border': inputStatus === 'idle',
+                'border-orange-500 focus:border-orange-500 focus:ring-orange-500/20': inputStatus === 'typing',
+                'border-green-500 focus:border-green-500 focus:ring-green-500/20': inputStatus === 'valid',
+                'border-red-500 focus:border-red-500 focus:ring-red-500/20': inputStatus === 'invalid' || error
+              }
+            )}
+            aria-invalid={!!error || inputStatus === 'invalid'}
+          />
+          {isLoading ? (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="w-4 h-4 border-2 border-oyadrop/30 border-t-oyadrop rounded-full animate-spin"></div>
+            </div>
+          ) : inputStatus === 'valid' && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
           )}
-          aria-invalid={!!error || inputStatus === 'invalid'}
-        />
-        {isLoading ? (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="w-4 h-4 border-2 border-oyadrop/30 border-t-oyadrop rounded-full animate-spin"></div>
-          </div>
-        ) : inputStatus === 'valid' && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-        )}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => setShowMapDialog(true)}
+          className="flex-shrink-0"
+        >
+          <Map className="h-4 w-4" />
+        </Button>
       </div>
 
       {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
@@ -272,6 +296,14 @@ const AddressInput = ({
           </ul>
         </div>
       )}
+
+      <MapDialog
+        isOpen={showMapDialog}
+        onClose={() => setShowMapDialog(false)}
+        onSelectLocation={handleMapSelection}
+        initialAddress={inputValue}
+        initialCoordinates={coordinates}
+      />
     </div>
   );
 };
