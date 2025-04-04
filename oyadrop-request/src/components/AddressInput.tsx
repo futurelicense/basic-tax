@@ -18,7 +18,7 @@ interface AddressInputProps {
 }
 
 interface Suggestion {
-  place_id: number;
+  place_id: string;
   display_name: string;
   lat: string;
   lon: string;
@@ -26,7 +26,7 @@ interface Suggestion {
   state?: string;
 }
 
-const OSM_API_KEY = "c3d946fb64624c37bb37cb0bc770043d";
+const GOOGLE_MAPS_API_KEY = "AIzaSyBnsGVYbKYK9Ao6LmKdbtCkYDPW9wIjHsI";
 
 const AddressInput = ({
   label,
@@ -116,7 +116,7 @@ const AddressInput = ({
     };
   }, [showSuggestions]);
 
-  // Update fetchSuggestions to handle status
+  // Update fetchSuggestions to use Google Maps API
   const fetchSuggestions = async (query: string) => {
     if (!query || query.length < 3) {
       setSuggestions([]);
@@ -128,24 +128,33 @@ const AddressInput = ({
     setInputStatus('typing');
 
     try {
-      // Updated API call with Nigeria filter
       const response = await fetch(
-        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:ng&limit=5&apiKey=${OSM_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)},Nigeria&key=${GOOGLE_MAPS_API_KEY}`
       );
 
       if (!response.ok) throw new Error('Network response was not ok');
 
       const data = await response.json();
+      console.log("🚀 ~ fetchSuggestions ~ data:", data)
 
-      if (data && data.features && data.features.length > 0) {
-        const addressSuggestions = data.features.map((feature: any) => ({
-          place_id: feature.properties.place_id || Math.random().toString(36).substring(7),
-          display_name: feature.properties.formatted || feature.properties.name,
-          lat: feature.properties.lat || feature.geometry.coordinates[1],
-          lon: feature.properties.lon || feature.geometry.coordinates[0],
-          city: feature.properties.city,
-          state: feature.properties.state,
-        }));
+      if (data && data.results && data.results.length > 0) {
+        const addressSuggestions = data.results.map((result: any) => {
+          const addressComponents = result.address_components.reduce((acc: any, component: any) => {
+            component.types.forEach((type: string) => {
+              acc[type] = component.long_name;
+            });
+            return acc;
+          }, {});
+
+          return {
+            place_id: result.place_id,
+            display_name: result.formatted_address,
+            lat: result.geometry.location.lat.toString(),
+            lon: result.geometry.location.lng.toString(),
+            city: addressComponents.locality || addressComponents.administrative_area_level_2,
+            state: addressComponents.administrative_area_level_1,
+          };
+        });
 
         setSuggestions(addressSuggestions);
         setShowSuggestions(true);
