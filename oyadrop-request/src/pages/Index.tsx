@@ -291,8 +291,10 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 py-8 px-4 md:py-12">
       {/* WhatsApp Support Button */}
-      <WhatsAppSupport
-        phoneNumber="2348123456789" // Replace with your actual WhatsApp number with country code
+
+      <WhatsAppSupport 
+        phoneNumber="+2349045684257" // Replace with your actual WhatsApp number with country code
+
         message="Hello OyaDrop, I need help with my delivery request."
       />
 
@@ -302,9 +304,11 @@ const Index = () => {
           <div className="bg-gradient-to-br from-oyadrop-light to-oyadrop px-6 py-8 text-white">
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 mb-4 opacity-90">
-                <img
-                  src="https://raw.githubusercontent.com/oyadrop/logoicons/main/YellowLogo.png"
-                  alt="OyaDrop Logo"
+
+
+                <img 
+                  src="https://oyadrop.com.ng/wp-content/uploads/2020/10/cropped-oa2-1.png" 
+                  alt="OyaDrop Logo" 
                   className="w-full h-full object-contain"
                 />
               </div>
